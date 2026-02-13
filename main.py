@@ -16,6 +16,7 @@ ultimo_texto = ''
 reader = easyocr.Reader(['pt'])
 modelo_urbano = YOLO('runs/detect/train3/weights/best.pt')
 modelo_geral = YOLO('yolov8m.pt')
+modelo_esquina = YOLO('esquina.pt')
 modelo_comando = vosk.Model('vosk-model-small-pt-0.3')
 rec = vosk.KaldiRecognizer(modelo_comando, 16000)
 
@@ -85,6 +86,7 @@ while True:
 
     #YOLO urbano primeiro
     res_urbano = modelo_urbano(frame, conf=0.45, verbose=False)[0]
+    res_esquina = modelo_esquina(frame, conf=0.45, verbose=False)[0]
 
     if len(res_urbano.boxes) > 0:
         caixas = res_urbano.boxes.xyxy.cpu().numpy()
@@ -92,6 +94,13 @@ while True:
         clss = res_urbano.boxes.cls.cpu().numpy().astype(int)
         nomes = modelo_urbano.names
         cor = (0, 255, 0)
+        
+    if len(res_esquina.boxes) > 0:
+        caixas = res_esquina.boxes.xyxy.cpu().numpy()
+        confs = res_esquina.boxes.conf.cpu().numpy()
+        clss = res_esquina.boxes.cls.cpu().numpy().astype(int)
+        nomes = modelo_esquina.names
+        cor = (254, 252, 0)
     else:
         res_geral = modelo_geral(frame, conf=0.45, verbose=False)[0]
         caixas = res_geral.boxes.xyxy.cpu().numpy()
